@@ -1,0 +1,503 @@
+# Ứng dụng HTML + JavaScript: Đề thi trắc nghiệm tương tác
+
+```html
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Đề thi tương tác - Cực trị địa phương và toàn cục</title>
+
+<script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+<script id="MathJax-script" async
+src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+<style>
+body {
+    font-family: Arial, sans-serif;
+    background: #fff8d6;
+    margin: 0;
+    padding: 20px;
+    line-height: 1.6;
+}
+
+.container {
+    max-width: 1200px;
+    margin: auto;
+    background: white;
+    padding: 30px;
+    border-radius: 16px;
+    box-shadow: 0 0 15px rgba(0,0,0,0.15);
+}
+
+h1 {
+    text-align: center;
+    color: #004b91;
+}
+
+h2 {
+    color: #b1005a;
+    margin-top: 40px;
+}
+
+.question {
+    border: 2px solid #ddd;
+    border-radius: 12px;
+    padding: 18px;
+    margin-bottom: 25px;
+    background: #fffdf3;
+}
+
+.question-title {
+    font-weight: bold;
+    font-size: 18px;
+    margin-bottom: 12px;
+}
+
+.option {
+    padding: 12px;
+    margin: 8px 0;
+    border-radius: 8px;
+    background: #f2f2f2;
+    cursor: pointer;
+    transition: 0.3s;
+    border: 2px solid transparent;
+}
+
+.option:hover {
+    background: #e6f0ff;
+}
+
+.correct {
+    background: #c8ffd0 !important;
+    border: 2px solid green !important;
+}
+
+.wrong {
+    background: #ffd0d0 !important;
+    border: 2px solid red !important;
+}
+
+.explanation {
+    display: none;
+    margin-top: 15px;
+    padding: 15px;
+    background: #eef8ff;
+    border-left: 6px solid #0077cc;
+    border-radius: 8px;
+}
+
+.tip {
+    margin-top: 10px;
+    padding: 10px;
+    background: #fff3c4;
+    border-left: 6px solid orange;
+    border-radius: 8px;
+}
+
+.score-box {
+    position: sticky;
+    top: 10px;
+    background: #004b91;
+    color: white;
+    padding: 12px;
+    border-radius: 12px;
+    text-align: center;
+    font-size: 20px;
+    margin-bottom: 25px;
+}
+
+.footer {
+    text-align: center;
+    margin-top: 40px;
+    font-style: italic;
+    color: #444;
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+
+<h1>ĐỀ THI TƯƠNG TÁC<br>CỰC TRỊ ĐỊA PHƯƠNG – TOÀN CỤC</h1>
+
+<div class="score-box">
+Điểm hiện tại: <span id="score">0</span> / 20
+</div>
+
+<h2>PHẦN I — 5 CÂU LÝ THUYẾT</h2>
+
+<div id="quiz"></div>
+
+<div class="footer">
+“Dốc bằng không chưa chắc là đỉnh núi — phải nhìn thêm độ cong.”<br>
+— Dr.rer.nat Duymt
+</div>
+
+</div>
+
+<script>
+const questions = [
+
+// =====================
+// LÝ THUYẾT
+// =====================
+{
+q: "1. Theo định lý Fermat, nếu hàm số đạt cực trị tại \\(x_0\\) và khả vi tại đó thì:",
+options: [
+"\\(f(x_0)=0\\)",
+"\\(f''(x_0)=0\\)",
+"\\(f'(x_0)=0\\)",
+"\\(f'(x_0) > 0\\)"
+],
+answer: 2,
+explain: "Định lý Fermat phát biểu rằng: nếu hàm số có cực trị và khả vi tại điểm đó thì đạo hàm cấp một bằng 0.",
+tip: "Mẹo nhanh: Đỉnh núi hay đáy thung lũng thì tiếp tuyến nằm ngang → đạo hàm bằng 0."
+},
+
+{
+q: "2. Nếu \\(f''(x_0) > 0\\) thì đồ thị tại \\(x_0\\) có dạng:",
+options: [
+"Lõm xuống",
+"Lõm lên",
+"Đường thẳng",
+"Không xác định"
+],
+answer: 1,
+explain: "Khi đạo hàm cấp hai dương, đồ thị cong lên giống hình cái bát → cực tiểu địa phương.",
+tip: "Nhớ nhanh: \\(f''>0\\) → smile 😊 → thung lũng."
+},
+
+{
+q: "3. Cực đại toàn cục là:",
+options: [
+"Giá trị lớn nhất trong một lân cận",
+"Giá trị lớn nhất trên toàn miền xác định",
+"Điểm có đạo hàm bằng 0",
+"Điểm có đạo hàm cấp hai âm"
+],
+answer: 1,
+explain: "Cực đại toàn cục nghĩa là lớn nhất trên toàn bộ miền xác định chứ không chỉ xung quanh nó.",
+tip: "Địa phương = trong xóm. Toàn cục = cả thế giới."
+},
+
+{
+q: "4. Khi tìm GTLN-GTNN trên đoạn \\([a,b]\\), cần xét:",
+options: [
+"Chỉ điểm dừng",
+"Chỉ hai đầu mút",
+"Điểm dừng và đầu mút",
+"Điểm dừng, điểm không khả vi và đầu mút"
+],
+answer: 3,
+explain: "Cực trị toàn cục có thể xuất hiện ở đầu mút hoặc điểm không khả vi nên phải xét tất cả.",
+tip: "Câu thần chú: dừng — gãy — biên."
+},
+
+{
+q: "5. Với hàm hai biến, nếu \\(D<0\\) trong kiểm tra Hessian thì điểm đó là:",
+options: [
+"Cực đại",
+"Cực tiểu",
+"Điểm yên ngựa",
+"Không xác định"
+],
+answer: 2,
+explain: "Nếu \\(D<0\\), đồ thị cong lên theo một hướng và cong xuống theo hướng khác → điểm yên ngựa.",
+tip: "D âm → đồ thị vặn xoắn → không phải cực trị."
+},
+
+// =====================
+// DỄ
+// =====================
+{
+q: "6. Tìm điểm dừng của hàm \\(f(x)=x^2-4x+1\\).",
+options: [
+"\\(x=1\\)",
+"\\(x=2\\)",
+"\\(x=3\\)",
+"\\(x=4\\)"
+],
+answer: 1,
+explain: "\\(f'(x)=2x-4=0 \\Rightarrow x=2\\).",
+tip: "Hàm bậc hai \\(ax^2+bx+c\\) có đỉnh tại \\(-b/2a\\)."
+},
+
+{
+q: "7. Hàm \\(f(x)=x^2\\) đạt GTNN trên đoạn \\([-1,2]\\) tại:",
+options: [
+"\\(x=-1\\)",
+"\\(x=0\\)",
+"\\(x=1\\)",
+"\\(x=2\\)"
+],
+answer: 1,
+explain: "\\(f(0)=0\\) nhỏ nhất trên đoạn.",
+tip: "Bình phương luôn không âm → gần 0 nhất thì nhỏ nhất."
+},
+
+{
+q: "8. Với \\(f(x)=x^3\\), tại \\(x=0\\):",
+options: [
+"Có cực đại",
+"Có cực tiểu",
+"Là điểm uốn",
+"Không khả vi"
+],
+answer: 2,
+explain: "\\(f'(0)=0\\) nhưng hàm vẫn tăng qua 0 → không có cực trị, chỉ là điểm uốn.",
+tip: "Nếu đồ thị đi xuyên qua điểm thay vì quay đầu thì không phải cực trị."
+},
+
+{
+q: "9. Hàm \\(f(x)=|x|\\) không khả vi tại:",
+options: [
+"\\(x=-1\\)",
+"\\(x=0\\)",
+"\\(x=1\\)",
+"\\(x=2\\)"
+],
+answer: 1,
+explain: "Đồ thị có góc nhọn tại 0 nên không có tiếp tuyến duy nhất.",
+tip: "Hàm trị tuyệt đối luôn gãy ở gốc tọa độ."
+},
+
+{
+q: "10. Nếu \\(f''(x_0)<0\\) thì \\(x_0\\) là:",
+options: [
+"Cực tiểu",
+"Điểm uốn",
+"Cực đại",
+"Không xác định"
+],
+answer: 2,
+explain: "Đạo hàm cấp hai âm → đồ thị lõm xuống → cực đại địa phương.",
+tip: "\\(f''<0\\) giống mái vòm úp xuống."
+},
+
+// =====================
+// TRUNG BÌNH
+// =====================
+{
+q: "11. Tìm GTLN của \\(f(x)=x^2-2x+3\\) trên \\([0,3]\\).",
+options: [
+"2",
+"3",
+"6",
+"9"
+],
+answer: 2,
+explain: "Tính tại các điểm cần xét: \\(f(0)=3, f(1)=2, f(3)=6\\). GTLN là 6.",
+tip: "Với đoạn đóng luôn kiểm tra đầu mút."
+},
+
+{
+q: "12. Điểm cực trị của \\(f(x)=x^3-3x\\) là:",
+options: [
+"\\(x=0\\)",
+"\\(x=\pm1\\)",
+"\\(x=2\\)",
+"Không có"
+],
+answer: 1,
+explain: "\\(f'(x)=3x^2-3=0\\Rightarrow x=\pm1\\).",
+tip: "Đặt đạo hàm bằng 0 rồi phân tích nhân tử nhanh."
+},
+
+{
+q: "13. Hàm nào sau đây có cực tiểu tại \\(x=0\\)?",
+options: [
+"\\(f(x)=x^3\\)",
+"\\(f(x)=-x^2\\)",
+"\\(f(x)=x^2\\)",
+"\\(f(x)=1/x\\)"
+],
+answer: 2,
+explain: "\\(x^2\\) có dạng thung lũng với đáy tại 0.",
+tip: "Parabol mở lên → cực tiểu."
+},
+
+{
+q: "14. Với \\(f(x)=x^4\\), tại \\(x=0\\):",
+options: [
+"Cực đại",
+"Cực tiểu",
+"Điểm yên ngựa",
+"Không xác định"
+],
+answer: 1,
+explain: "\\(f'(0)=0\\), \\(f''(0)=0\\) nhưng mọi giá trị lân cận đều không âm → cực tiểu.",
+tip: "Lũy thừa chẵn thường tạo đáy tại 0."
+},
+
+{
+q: "15. Tìm GTNN của \\(f(x)=x^2+2x+5\\).",
+options: [
+"3",
+"4",
+"5",
+"6"
+],
+answer: 1,
+explain: "Hoàn thành bình phương: \\(f(x)=(x+1)^2+4\\). GTNN là 4.",
+tip: "Bậc hai → hoàn thành bình phương rất nhanh."
+},
+
+// =====================
+// KHÓ
+// =====================
+{
+q: "16. Tìm GTLN của \\(f(x)=x^3-3x^2+2\\) trên \\([-1,3]\\).",
+options: [
+"0",
+"2",
+"4",
+"8"
+],
+answer: 1,
+explain: "\\(f'(x)=3x^2-6x=3x(x-2)\\). Xét các điểm: \\(x=-1,0,2,3\\). Giá trị tương ứng: -2, 2, -2, 2. GTLN = 2.",
+tip: "Luôn lập bảng giá trị tại điểm dừng + đầu mút."
+},
+
+{
+q: "17. Với \\(f(x)=x+1/x\\) trên \\([1/2,4]\\), GTNN là:",
+options: [
+"2",
+"2.5",
+"3",
+"4"
+],
+answer: 0,
+explain: "\\(f'(x)=1-1/x^2=0\\Rightarrow x=1\\). Khi đó \\(f(1)=2\\), nhỏ nhất.",
+tip: "Biểu thức \\(x+1/x\\) thường dùng AM-GM → nhỏ nhất bằng 2."
+},
+
+{
+q: "18. Cho \\(f(x,y)=x^2-y^2\\). Điểm \\((0,0)\\) là:",
+options: [
+"Cực đại",
+"Cực tiểu",
+"Điểm yên ngựa",
+"Không khả vi"
+],
+answer: 2,
+explain: "Theo trục x hàm tăng, theo trục y hàm giảm → không thể là cực trị.",
+tip: "Một hướng lên, một hướng xuống → yên ngựa."
+},
+
+{
+q: "19. Hàm \\(f(x)=x^4-4x^2\\) có bao nhiêu điểm cực trị?",
+options: [
+"1",
+"2",
+"3",
+"4"
+],
+answer: 2,
+explain: "\\(f'(x)=4x^3-8x=4x(x^2-2)=0\\Rightarrow x=0, \pm\\sqrt{2}\\). Có 3 điểm cực trị.",
+tip: "Đạo hàm bậc 3 có thể cho tối đa 3 điểm dừng."
+},
+
+{
+q: "20. Tìm GTNN của \\(f(x)=x^2-6x+13\\).",
+options: [
+"3",
+"4",
+"5",
+"6"
+],
+answer: 1,
+explain: "\\(f(x)=(x-3)^2+4\\). GTNN là 4 tại \\(x=3\\).",
+tip: "Nhìn nhanh dạng \\(x^2-2ax+b\\) → đáy tại \\(x=a\\)."
+}
+
+];
+
+const quizContainer = document.getElementById('quiz');
+let score = 0;
+let answered = 0;
+
+questions.forEach((question, index) => {
+    const qDiv = document.createElement('div');
+    qDiv.classList.add('question');
+
+    qDiv.innerHTML = `
+        <div class="question-title">${question.q}</div>
+        <div class="options"></div>
+        <div class="explanation">
+            <strong>Đáp án đúng:</strong> ${String.fromCharCode(65 + question.answer)}<br><br>
+            <strong>Giải thích:</strong> ${question.explain}
+            <div class="tip"><strong>Mẹo làm nhanh:</strong> ${question.tip}</div>
+        </div>
+    `;
+
+    const optionsDiv = qDiv.querySelector('.options');
+
+    question.options.forEach((opt, i) => {
+        const btn = document.createElement('div');
+        btn.classList.add('option');
+        btn.innerHTML = `<strong>${String.fromCharCode(65+i)}.</strong> ${opt}`;
+
+        btn.addEventListener('click', () => {
+            if(qDiv.classList.contains('answered')) return;
+
+            qDiv.classList.add('answered');
+            answered++;
+
+            const allOptions = optionsDiv.querySelectorAll('.option');
+
+            allOptions.forEach((o, idx) => {
+                if(idx === question.answer){
+                    o.classList.add('correct');
+                }
+            });
+
+            if(i === question.answer){
+                score++;
+            } else {
+                btn.classList.add('wrong');
+            }
+
+            document.getElementById('score').textContent = score;
+            qDiv.querySelector('.explanation').style.display = 'block';
+
+            if(window.MathJax){
+                MathJax.typesetPromise();
+            }
+        });
+
+        optionsDiv.appendChild(btn);
+    });
+
+    quizContainer.appendChild(qDiv);
+});
+
+if(window.MathJax){
+    MathJax.typesetPromise();
+}
+</script>
+
+</body>
+</html>
+```
+
+## Hướng dẫn sử dụng
+
+1. Sao chép toàn bộ mã HTML ở trên.
+2. Lưu thành file:
+
+```text
+quiz_cuctri.html
+```
+
+3. Mở file bằng trình duyệt Chrome, Edge hoặc Firefox.
+
+4. Hệ thống sẽ:
+
+   * Hiển thị công thức bằng MathJax.
+   * Tô xanh khi chọn đúng.
+   * Tô đỏ khi chọn sai.
+   * Hiện đáp án + giải thích + mẹo làm nhanh.
+   * Tự động chấm điểm.
+
+5. Có thể upload file này lên GitHub Pages hoặc Netlify để chạy online.
